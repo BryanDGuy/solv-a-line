@@ -23,7 +23,6 @@ pub struct SudokuSolver {
     pub unsolved_spaces: Vec<(usize, usize)>,
     pub percent_solved: f32,
     solved_board: RefCell<Option<Vec<Vec<u8>>>>
-    // all_rows_ptr: Vec<Vec<*const u8>>
 }
 
 impl SudokuSolver {
@@ -44,7 +43,6 @@ impl SudokuSolver {
             unsolved_spaces,
             percent_solved: (1.0 - (unsolved_length / (9.0 * 9.0))) * 100.0,
             solved_board: RefCell::new(None)
-            // all_rows_ptr: sudoku_puzzle.iter().map(|column| column.iter().map(|value| Box::new(value)).collect_vec()).collect_vec()
         }
     }
 
@@ -219,7 +217,7 @@ mod tests {
             (8, 8)
         ]);
         assert_eq!(solver.percent_solved, 96.296295);
-        // assert_eq!(solver.solved_board.borrow(), None);
+        assert_eq!(solver.solved_board.borrow().as_ref(), None);
     }
 
     #[test]
