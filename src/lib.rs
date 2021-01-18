@@ -135,11 +135,7 @@ impl SudokuSolver {
         let mut attempted_values: HashMap<(usize, usize), Vec<u8>> = HashMap::new();
         let mut unsolved_spaces_index = 0;
 
-        loop {
-            if SudokuSolver::all_spaces_solved(&solved_board) {
-                break;
-            }
-
+        while !SudokuSolver::all_spaces_solved(&solved_board) {
             let row_index = self.unsolved_spaces[unsolved_spaces_index].0;
             let column_index = self.unsolved_spaces[unsolved_spaces_index].1;
             let nonet_index = 3 * ((9 * row_index + column_index) / 27) + ((9 * row_index + column_index) / 3 % 3);
