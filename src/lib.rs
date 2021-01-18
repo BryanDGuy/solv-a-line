@@ -7,7 +7,6 @@ pub struct SudokuSolver {
     pub unsolved_spaces: Vec<(usize, usize)>
 }
 
-
 impl SudokuSolver {
     pub fn new(sudoku_puzzle: &Vec<Vec<u8>>) -> SudokuSolver {
         if sudoku_puzzle.len() != 9 || sudoku_puzzle.iter().any(|row| row.len() != 9) {
@@ -168,6 +167,7 @@ impl SudokuSolver {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::time::Instant;
 
     #[test]
     fn constructor_works_valid_board() {
@@ -382,7 +382,12 @@ mod tests {
         ];
         
         let solver = SudokuSolver::new(&valid_board);
+        
+        let start = Instant::now();
         let solved_board = solver.solve().unwrap();
+        let end = Instant::now();
+
+        println!("Easy sudoku puzzle took {}ms to solve.", end.duration_since(start).as_millis());
         assert_eq!(solved_board, vec![
             vec![ 6,7,3, 8,9,4, 5,1,2 ],
             vec![ 9,1,2, 7,3,5, 4,8,6 ],
@@ -411,7 +416,12 @@ mod tests {
         ];
 
         let solver = SudokuSolver::new(&valid_board);
+        
+        let start = Instant::now();
         let solved_board = solver.solve().unwrap();
+        let end = Instant::now();
+
+        println!("Medium sudoku puzzle took {}ms to solve.", end.duration_since(start).as_millis());
         assert_eq!(solved_board, vec![
             vec![ 7,8,5, 4,3,9, 1,2,6 ],
             vec![ 6,1,2, 8,7,5, 3,4,9 ],
@@ -440,7 +450,12 @@ mod tests {
         ];
 
         let solver = SudokuSolver::new(&valid_board);
+
+        let start = Instant::now();
         let solved_board = solver.solve().unwrap();
+        let end = Instant::now();
+
+        println!("Hard sudoku puzzle took {}ms to solve.", end.duration_since(start).as_millis());
         assert_eq!(solved_board, vec![
             vec![ 4,3,9, 6,8,2, 7,1,5 ],
             vec![ 6,7,2, 1,3,5, 9,4,8 ],
