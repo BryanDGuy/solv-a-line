@@ -145,7 +145,7 @@ impl SudokuSolver {
         // 7. If not, move back to the previous space that was solved and plug in the next valid value.
 
 
-        // Optimization 1: Keep solved board stored in private variable for quick reaccess
+        // Optimization 1: Keep solved board stored in private variable for cached access
         if self.solved_board.borrow().is_some() {
             return self.solved_board.borrow().as_ref().unwrap().to_vec();
         }
