@@ -4,19 +4,19 @@ use std::collections::HashMap;
 
 #[derive(Debug)]
 pub struct SudokuBoard {
-    pub board_configuration: Vec<Vec<u8>>
+    pub configuration: Vec<Vec<u8>>
 }
 
 impl SudokuBoard {
     fn new(sudoku_puzzle: &Vec<Vec<u8>>) -> SudokuBoard {
         return SudokuBoard {
-            board_configuration: sudoku_puzzle.clone()
+            configuration: sudoku_puzzle.clone()
         }
     }
 
     fn copy(other: &SudokuBoard) -> SudokuBoard {
         return SudokuBoard {
-            board_configuration: other.board_configuration.clone()
+            configuration: other.configuration.clone()
         }
     }
 
@@ -24,7 +24,7 @@ impl SudokuBoard {
         let mut unsolved_spaces = Vec::new();
         for row in 0..=8 {
             for column in 0..=8 {
-                if self.board_configuration[row][column] == 0 {
+                if self.configuration[row][column] == 0 {
                     unsolved_spaces.push((row, column));
                 }
             }
@@ -63,13 +63,13 @@ impl SudokuBoard {
     }
 
     fn all_spaces_solved(&self) -> bool {
-        return !self.board_configuration.iter().any(|row| row.iter().any(|value| *value == 0));
+        return !self.configuration.iter().any(|row| row.iter().any(|value| *value == 0));
     }
 
     fn get_row(&self, row_index: usize) -> Vec<u8> {
         let mut row = Vec::new();
         for column_index in 0..=8 {
-            row.push(self.board_configuration[row_index][column_index]);
+            row.push(self.configuration[row_index][column_index]);
         }
         return row;
     }
@@ -77,7 +77,7 @@ impl SudokuBoard {
     fn get_column(&self, column_index: usize) -> Vec<u8> {
         let mut column = Vec::new();
         for row_index in 0..=8 {
-            column.push(self.board_configuration[row_index][column_index]);
+            column.push(self.configuration[row_index][column_index]);
         }
         return column;
     }
@@ -101,7 +101,7 @@ impl SudokuBoard {
         let mut nonet = Vec::new();
         for row_index in starting_row..=(starting_row+2) {
             for column_index in starting_column..=(starting_column+2) {
-                nonet.push(self.board_configuration[row_index][column_index]);
+                nonet.push(self.configuration[row_index][column_index]);
             }
         }
         return nonet;
@@ -165,7 +165,7 @@ impl SudokuSolver {
             let column_index = self.unsolved_spaces[unsolved_spaces_index].1;
             let nonet_index = 3 * ((9 * row_index + column_index) / 27) + ((9 * row_index + column_index) / 3 % 3);
 
-            solved_board.board_configuration[row_index][column_index] = 0; // Set back to 0 in the case this was a back-tracked space
+            solved_board.configuration[row_index][column_index] = 0; // Set back to 0 in the case this was a back-tracked space
             let previously_attempted_values = attempted_values.entry((row_index, column_index)).or_default();
             let row = solved_board.get_row(row_index);
             let column = solved_board.get_column(column_index);
@@ -180,7 +180,7 @@ impl SudokuSolver {
 
             let valid_value_candidates = all_value_candidates.iter().filter(|value| !invalid_value_candidates.contains(value)).collect_vec();
             if valid_value_candidates.len() > 0 { // Found a valid value to use
-                solved_board.board_configuration[row_index][column_index] = *valid_value_candidates[0];
+                solved_board.configuration[row_index][column_index] = *valid_value_candidates[0];
                 attempted_values.entry((row_index, column_index)).or_default().push(*valid_value_candidates[0]);
                 unsolved_spaces_index += 1;
             }
@@ -215,7 +215,7 @@ mod tests {
         ];
         
         let solver = SudokuSolver::new(&valid_board);
-        assert_eq!(solver.sudoku_puzzle.board_configuration, valid_board);
+        assert_eq!(solver.sudoku_puzzle.configuration, valid_board);
         assert_eq!(solver.unsolved_spaces, vec![
             (0, 0),
             (6, 3),
@@ -417,7 +417,7 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
 
-        assert_eq!(solved_board.board_configuration, vec![
+        assert_eq!(solved_board.configuration, vec![
             vec![ 6,7,3, 8,9,4, 5,1,2 ],
             vec![ 9,1,2, 7,3,5, 4,8,6 ],
             vec![ 8,4,5, 6,1,2, 9,7,3 ],
@@ -447,7 +447,7 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
 
-        assert_eq!(solved_board.board_configuration, vec![
+        assert_eq!(solved_board.configuration, vec![
             vec![ 7,8,5, 4,3,9, 1,2,6 ],
             vec![ 6,1,2, 8,7,5, 3,4,9 ],
             vec![ 4,9,3, 6,2,1, 5,7,8 ],
@@ -477,7 +477,7 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
 
-        assert_eq!(solved_board.board_configuration, vec![
+        assert_eq!(solved_board.configuration, vec![
             vec![ 4,3,9, 6,8,2, 7,1,5 ],
             vec![ 6,7,2, 1,3,5, 9,4,8 ],
             vec![ 1,5,8, 7,4,9, 3,6,2 ],
@@ -517,7 +517,7 @@ mod tests {
         let duration_second = end_second.duration_since(start_second).as_millis();
 
         println!("Caching test took {}ms to solve in the first iteration and {}ms in the second iteration.", duration_first, duration_second);
-        assert_eq!(solved_board_first.board_configuration, solved_board_second.board_configuration);
+        assert_eq!(solved_board_first.configuration, solved_board_second.configuration);
         assert!(duration_second < duration_first);
     }
 }
