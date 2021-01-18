@@ -1,10 +1,12 @@
 use itertools::Itertools;
 use std::collections::HashMap;
+use std::error::Error;
 
 pub struct SudokuSolver {
     pub sudoku_puzzle: Vec<Vec<u8>>,
     pub unsolved_spaces: Vec<(usize, usize)>
 }
+
 
 impl SudokuSolver {
     pub fn new(sudoku_puzzle: &Vec<Vec<u8>>) -> SudokuSolver {
@@ -109,7 +111,7 @@ impl SudokuSolver {
         return nonet;
     }
 
-    pub fn solve(self) -> Vec<Vec<u8>> {
+    pub fn solve(self) -> Result<Vec<Vec<u8>>, Box<dyn Error>> {
         // Back-tracking Algo
         // 1. Check if board is solved. If it is, end.
         // 2. Get Row at current space.
@@ -159,7 +161,7 @@ impl SudokuSolver {
             }
         };
 
-        return solved_board;
+        return Ok(solved_board);
     }
 }
 
@@ -380,7 +382,7 @@ mod tests {
         ];
         
         let solver = SudokuSolver::new(&valid_board);
-        let solved_board = solver.solve();
+        let solved_board = solver.solve().unwrap();
         assert_eq!(solved_board, vec![
             vec![ 6,7,3, 8,9,4, 5,1,2 ],
             vec![ 9,1,2, 7,3,5, 4,8,6 ],
@@ -409,7 +411,7 @@ mod tests {
         ];
 
         let solver = SudokuSolver::new(&valid_board);
-        let solved_board = solver.solve();
+        let solved_board = solver.solve().unwrap();
         assert_eq!(solved_board, vec![
             vec![ 7,8,5, 4,3,9, 1,2,6 ],
             vec![ 6,1,2, 8,7,5, 3,4,9 ],
@@ -438,7 +440,7 @@ mod tests {
         ];
 
         let solver = SudokuSolver::new(&valid_board);
-        let solved_board = solver.solve();
+        let solved_board = solver.solve().unwrap();
         assert_eq!(solved_board, vec![
             vec![ 4,3,9, 6,8,2, 7,1,5 ],
             vec![ 6,7,2, 1,3,5, 9,4,8 ],
