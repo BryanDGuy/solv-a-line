@@ -270,6 +270,102 @@ mod tests {
     }
 
     #[test]
+    fn get_row_works() {
+        let valid_board = vec![
+            vec![ 6,7,3, 8,9,4, 5,1,2 ],
+            vec![ 9,1,2, 7,3,5, 4,8,6 ],
+            vec![ 8,4,5, 6,1,2, 9,7,3 ],
+            vec![ 7,9,8, 2,6,1, 3,5,4 ],
+            vec![ 5,2,6, 4,7,3, 8,9,1 ],
+            vec![ 1,3,4, 5,8,9, 2,6,7 ],
+            vec![ 4,6,9, 1,2,8, 7,3,5 ],
+            vec![ 2,8,7, 3,5,6, 1,4,9 ],
+            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        ];
+
+        let mut all_rows: Vec<Vec<u8>> = Vec::new();
+        for row_index in 0..=8 {
+            all_rows.push(SudokuSolver::get_row(&valid_board, row_index));
+        }
+
+        assert_eq!(all_rows, vec![
+            vec![ 6,7,3, 8,9,4, 5,1,2 ],
+            vec![ 9,1,2, 7,3,5, 4,8,6 ],
+            vec![ 8,4,5, 6,1,2, 9,7,3 ],
+            vec![ 7,9,8, 2,6,1, 3,5,4 ],
+            vec![ 5,2,6, 4,7,3, 8,9,1 ],
+            vec![ 1,3,4, 5,8,9, 2,6,7 ],
+            vec![ 4,6,9, 1,2,8, 7,3,5 ],
+            vec![ 2,8,7, 3,5,6, 1,4,9 ],
+            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        ]);
+    }
+
+    #[test]
+    fn get_column_works() {
+        let valid_board = vec![
+            vec![ 6,7,3, 8,9,4, 5,1,2 ],
+            vec![ 9,1,2, 7,3,5, 4,8,6 ],
+            vec![ 8,4,5, 6,1,2, 9,7,3 ],
+            vec![ 7,9,8, 2,6,1, 3,5,4 ],
+            vec![ 5,2,6, 4,7,3, 8,9,1 ],
+            vec![ 1,3,4, 5,8,9, 2,6,7 ],
+            vec![ 4,6,9, 1,2,8, 7,3,5 ],
+            vec![ 2,8,7, 3,5,6, 1,4,9 ],
+            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        ];
+
+        let mut all_columns: Vec<Vec<u8>> = Vec::new();
+        for column_index in 0..=8 {
+            all_columns.push(SudokuSolver::get_column(&valid_board, column_index));
+        }
+
+        assert_eq!(all_columns, vec![
+            vec![ 6,9,8, 7,5,1, 4,2,3 ],
+            vec![ 7,1,4, 9,2,3, 6,8,5 ],
+            vec![ 3,2,5, 8,6,4, 9,7,1 ],
+            vec![ 8,7,6, 2,4,5, 1,3,9 ],
+            vec![ 9,3,1, 6,7,8, 2,5,4 ],
+            vec![ 4,5,2, 1,3,9, 8,6,7 ],
+            vec![ 5,4,9, 3,8,2, 7,1,6 ],
+            vec![ 1,8,7, 5,9,6, 3,4,2 ],
+            vec![ 2,6,3, 4,1,7, 5,9,8 ]
+        ]);
+    }
+
+    #[test]
+    fn get_nonet_works() {
+        let valid_board = vec![
+            vec![ 6,7,3, 8,9,4, 5,1,2 ],
+            vec![ 9,1,2, 7,3,5, 4,8,6 ],
+            vec![ 8,4,5, 6,1,2, 9,7,3 ],
+            vec![ 7,9,8, 2,6,1, 3,5,4 ],
+            vec![ 5,2,6, 4,7,3, 8,9,1 ],
+            vec![ 1,3,4, 5,8,9, 2,6,7 ],
+            vec![ 4,6,9, 1,2,8, 7,3,5 ],
+            vec![ 2,8,7, 3,5,6, 1,4,9 ],
+            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        ];
+
+        let mut all_nonets: Vec<Vec<u8>> = Vec::new();
+        for nonet_index in 0..=8 {
+            all_nonets.push(SudokuSolver::get_nonet(&valid_board, nonet_index));
+        }
+
+        assert_eq!(all_nonets, vec![
+            vec![ 6,7,3, 9,1,2, 8,4,5 ],
+            vec![ 8,9,4, 7,3,5, 6,1,2 ],
+            vec![ 5,1,2, 4,8,6, 9,7,3 ],
+            vec![ 7,9,8, 5,2,6, 1,3,4 ],
+            vec![ 2,6,1, 4,7,3, 5,8,9 ],
+            vec![ 3,5,4, 8,9,1, 2,6,7 ],
+            vec![ 4,6,9, 2,8,7, 3,5,1 ],
+            vec![ 1,2,8, 3,5,6, 9,4,7 ],
+            vec![ 7,3,5, 1,4,9, 6,2,8 ]
+        ]);
+    }
+
+    #[test]
     fn solve_easy_works() {
         let valid_board = vec![
             vec![ 0,7,3, 8,9,4, 5,1,2 ],
