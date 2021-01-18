@@ -133,7 +133,7 @@ impl SudokuSolver {
         return nonet;
     }
 
-    pub fn solve(&self) -> Result<Vec<Vec<u8>>, Unsolvable> {
+    pub fn solve(&self) -> Vec<Vec<u8>> {
         // Back-tracking Algo
         // 1. Check if board is solved. If it is, end.
         // 2. Get Row at current space.
@@ -147,7 +147,7 @@ impl SudokuSolver {
 
         // Optimization 1: Keep solved board stored in private variable for quick reaccess
         if self.solved_board.borrow().is_some() {
-            return Ok(self.solved_board.borrow().as_ref().unwrap().to_vec());
+            return self.solved_board.borrow().as_ref().unwrap().to_vec();
         }
 
         let all_value_candidates = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -186,7 +186,7 @@ impl SudokuSolver {
         };
 
         self.solved_board.replace(Some(solved_board));
-        return Ok(self.solved_board.borrow().as_ref().unwrap().to_vec());
+        return self.solved_board.borrow().as_ref().unwrap().to_vec();
     }
 }
 
@@ -410,12 +410,8 @@ mod tests {
         ];
         
         let solver = SudokuSolver::new(&valid_board);
-        
-        let start = Instant::now();
-        let solved_board = solver.solve().unwrap_or_default();
-        let end = Instant::now();
-        
-        println!("Easy sudoku puzzle took {}ms to solve.", end.duration_since(start).as_millis());
+        let solved_board = solver.solve();
+
         assert_eq!(solved_board, vec![
             vec![ 6,7,3, 8,9,4, 5,1,2 ],
             vec![ 9,1,2, 7,3,5, 4,8,6 ],
@@ -444,12 +440,8 @@ mod tests {
         ];
 
         let solver = SudokuSolver::new(&valid_board);
-        
-        let start = Instant::now();
-        let solved_board = solver.solve().unwrap_or_default();
-        let end = Instant::now();
+        let solved_board = solver.solve();
 
-        println!("Medium sudoku puzzle took {}ms to solve.", end.duration_since(start).as_millis());
         assert_eq!(solved_board, vec![
             vec![ 7,8,5, 4,3,9, 1,2,6 ],
             vec![ 6,1,2, 8,7,5, 3,4,9 ],
@@ -478,12 +470,8 @@ mod tests {
         ];
 
         let solver = SudokuSolver::new(&valid_board);
+        let solved_board = solver.solve();
 
-        let start = Instant::now();
-        let solved_board = solver.solve().unwrap_or_default();
-        let end = Instant::now();
-
-        println!("Hard sudoku puzzle took {}ms to solve.", end.duration_since(start).as_millis());
         assert_eq!(solved_board, vec![
             vec![ 4,3,9, 6,8,2, 7,1,5 ],
             vec![ 6,7,2, 1,3,5, 9,4,8 ],
@@ -514,16 +502,16 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
 
         let start_first = Instant::now();
-        let solved_board_first = solver.solve().unwrap_or_default();
+        let solved_board_first = solver.solve();
         let end_first = Instant::now();
         let duration_first = end_first.duration_since(start_first).as_millis();
 
         let start_second = Instant::now();
-        let solved_board_second = solver.solve().unwrap_or_default();
+        let solved_board_second = solver.solve();
         let end_second = Instant::now();
         let duration_second = end_second.duration_since(start_second).as_millis();
 
-        println!("Caching test took {}ms to solve in the first iteration and {}ms in the second iteraiton.", duration_first, duration_second);
+        println!("Caching test took {}ms to solve in the first iteration and {}ms in the second iteration.", duration_first, duration_second);
         assert_eq!(solved_board_first, solved_board_second);
         assert!(duration_second < duration_first);
     }
