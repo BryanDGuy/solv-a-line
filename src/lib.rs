@@ -4,7 +4,9 @@ use std::error::Error;
 
 pub struct SudokuSolver {
     pub sudoku_puzzle: Vec<Vec<u8>>,
-    pub unsolved_spaces: Vec<(usize, usize)>
+    pub unsolved_spaces: Vec<(usize, usize)>,
+    pub percent_solved: f32,
+    //all_rows_ptr: Vec<Vec<Box<&u8>>>
 }
 
 impl SudokuSolver {
@@ -17,9 +19,14 @@ impl SudokuSolver {
             panic!("An invalid starting board configuration was passed.");
         }
 
+        let unsolved_spaces = SudokuSolver::get_unsolved_spaces(sudoku_puzzle);
+        let unsolved_length: f32 = unsolved_spaces.len() as f32;
+
         return SudokuSolver {
             sudoku_puzzle: sudoku_puzzle.clone(),
-            unsolved_spaces: SudokuSolver::get_unsolved_spaces(sudoku_puzzle),
+            unsolved_spaces,
+            percent_solved: (1.0 - (unsolved_length / (9.0 * 9.0))) * 100.0,
+            //all_rows_ptr: sudoku_puzzle.iter().map(|column| column.iter().map(|value| Box::new(value)).collect_vec()).collect_vec()
         }
     }
 
@@ -190,6 +197,7 @@ mod tests {
             (6, 3),
             (8, 8)
         ]);
+        assert_eq!(solver.percent_solved, 96.296295);
     }
 
     #[test]
