@@ -1,12 +1,14 @@
 use itertools::Itertools;
 use std::collections::HashMap;
-use std::error::Error;
+
+#[derive(Debug)]
+pub struct Unsolvable;
 
 pub struct SudokuSolver {
     pub sudoku_puzzle: Vec<Vec<u8>>,
     pub unsolved_spaces: Vec<(usize, usize)>,
     pub percent_solved: f32,
-    //all_rows_ptr: Vec<Vec<Box<&u8>>>
+    // all_rows_ptr: Vec<Vec<*const u8>>
 }
 
 impl SudokuSolver {
@@ -26,7 +28,7 @@ impl SudokuSolver {
             sudoku_puzzle: sudoku_puzzle.clone(),
             unsolved_spaces,
             percent_solved: (1.0 - (unsolved_length / (9.0 * 9.0))) * 100.0,
-            //all_rows_ptr: sudoku_puzzle.iter().map(|column| column.iter().map(|value| Box::new(value)).collect_vec()).collect_vec()
+            // all_rows_ptr: sudoku_puzzle.iter().map(|column| column.iter().map(|value| Box::new(value)).collect_vec()).collect_vec()
         }
     }
 
@@ -117,7 +119,7 @@ impl SudokuSolver {
         return nonet;
     }
 
-    pub fn solve(self) -> Result<Vec<Vec<u8>>, Box<dyn Error>> {
+    pub fn solve(self) -> Result<Vec<Vec<u8>>, Unsolvable> {
         // Back-tracking Algo
         // 1. Check if board is solved. If it is, end.
         // 2. Get Row at current space.
