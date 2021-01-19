@@ -7,6 +7,10 @@ pub struct SudokuBoard {
 
 impl SudokuBoard {
     pub fn new(sudoku_puzzle: &Vec<Vec<u8>>) -> SudokuBoard {
+        if sudoku_puzzle.len() != 9 || sudoku_puzzle.iter().any(|row| row.len() != 9) {
+            panic!("The board must be 9x9.");
+        }
+
         return SudokuBoard {
             configuration: sudoku_puzzle.clone()
         }
@@ -112,7 +116,59 @@ mod test {
     use super::*;
 
     #[test]
-    fn all_unsolved_spaces_works() {
+    fn constructor_works_valid_board() {
+        let valid_configuration = vec![
+            vec![ 0,0,0, 0,0,0, 0,0,0 ],
+            vec![ 0,0,2, 0,0,5, 0,4,0 ],
+            vec![ 1,0,8, 0,4,0, 0,0,0 ],
+            vec![ 0,0,0, 0,0,0, 4,0,3 ],
+            vec![ 0,0,6, 0,5,0, 0,0,1 ],
+            vec![ 0,0,0, 0,2,0, 0,0,6 ],
+            vec![ 3,0,1, 0,0,0, 0,8,0 ],
+            vec![ 2,0,7, 0,0,0, 6,0,0 ],
+            vec![ 0,0,0, 0,0,6, 1,3,9 ]
+        ];
+
+        let valid_board = SudokuBoard::new(&valid_configuration);
+
+        assert_eq!(valid_board.configuration, valid_configuration);
+    }
+
+    #[test]
+    #[should_panic]
+    fn constructor_works_invalid_board_invalid_rows() {
+        let invalid_board_rows = vec![
+            vec![ 0,7,3, 8,9,4, 5,1,2 ],
+            vec![ 9,1,2, 7,3,5, 4,8,6 ],
+            vec![ 8,4,5, 6,1,2, 9,7,3 ],
+            vec![ 7,9,8, 2,6,1, 3,5,4 ],
+            vec![ 5,2,6, 4,7,3, 8,9,1 ],
+            vec![ 1,3,4, 5,8,9, 2,6,7 ],
+            vec![ 4,6,9, 0,2,8, 7,3,5 ],
+            vec![ 2,8,7, 3,5,6, 1,4,9 ]
+        ];
+        SudokuBoard::new(&invalid_board_rows);
+    }
+
+    #[test]
+    #[should_panic]
+    fn constructor_works_invalid_board_invalid_columns() {
+        let invalid_board_columns = vec![
+            vec![ 0,7,3, 8,9,4, 5,1 ],
+            vec![ 9,1,2, 7,3,5, 4,8 ],
+            vec![ 8,4,5, 6,1,2, 9,7 ],
+            vec![ 7,9,8, 2,6,1, 3,5 ],
+            vec![ 5,2,6, 4,7,3, 8,9 ],
+            vec![ 1,3,4, 5,8,9, 2,6 ],
+            vec![ 4,6,9, 0,2,8, 7,3 ],
+            vec![ 2,8,7, 3,5,6, 1,4 ],
+            vec![ 3,5,1, 9,4,7, 6,2 ]
+        ];
+        SudokuBoard::new(&invalid_board_columns);
+    }
+
+    #[test]
+    fn get_unsolved_spaces_works() {
         let board_with_zeroes = SudokuBoard::new(&vec![
             vec![ 0,7,3, 8,9,4, 5,1,2 ],
             vec![ 9,1,2, 7,3,5, 4,8,6 ],

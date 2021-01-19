@@ -4,29 +4,23 @@ use std::collections::HashMap;
 use crate::sudoku_board::SudokuBoard;
 
 pub struct SudokuSolver {
-    pub sudoku_puzzle: SudokuBoard,
+    pub board: SudokuBoard,
     pub unsolved_spaces: Vec<(usize, usize)>,
     pub percent_solved: f32,
     solved_board: RefCell<Option<SudokuBoard>>
 }
 
 impl SudokuSolver {
-    pub fn new(sudoku_puzzle: &Vec<Vec<u8>>) -> SudokuSolver {
-        if sudoku_puzzle.len() != 9 || sudoku_puzzle.iter().any(|row| row.len() != 9) {
-            panic!("The board must be 9x9.");
-        }
-
-        let board = SudokuBoard::new(&sudoku_puzzle);
-
-        if !board.all_spaces_valid() {
+    pub fn new(sudoku_board: &SudokuBoard) -> SudokuSolver {
+        if !sudoku_board.all_spaces_valid() {
             panic!("An invalid starting board configuration was passed.");
         }
 
-        let unsolved_spaces = board.get_unsolved_spaces();
+        let unsolved_spaces = sudoku_board.get_unsolved_spaces();
         let unsolved_length: f32 = unsolved_spaces.len() as f32;
 
         return SudokuSolver {
-            sudoku_puzzle: board,
+            board: SudokuBoard::copy(sudoku_board),
             unsolved_spaces,
             percent_solved: (1.0 - (unsolved_length / (9.0 * 9.0))) * 100.0,
             solved_board: RefCell::new(None)
@@ -51,7 +45,7 @@ impl SudokuSolver {
         }
 
         let all_value_candidates = vec![1, 2, 3, 4, 5, 6, 7, 8, 9];
-        let mut solved_board = SudokuBoard::copy(&self.sudoku_puzzle);
+        let mut solved_board = SudokuBoard::copy(&self.board);
         let mut attempted_values: HashMap<(usize, usize), Vec<u8>> = HashMap::new();
         let mut unsolved_spaces_index = 0;
 
@@ -97,7 +91,7 @@ mod tests {
 
     #[test]
     fn constructor_works_valid_board() {
-        let valid_board = vec![
+        let valid_board = SudokuBoard::new(&vec![
             vec![ 0,7,3, 8,9,4, 5,1,2 ],
             vec![ 9,1,2, 7,3,5, 4,8,6 ],
             vec![ 8,4,5, 6,1,2, 9,7,3 ],
@@ -107,55 +101,40 @@ mod tests {
             vec![ 4,6,9, 0,2,8, 7,3,5 ],
             vec![ 2,8,7, 3,5,6, 1,4,9 ],
             vec![ 3,5,1, 9,4,7, 6,2,0 ]
-        ];
+        ]);
         
         let solver = SudokuSolver::new(&valid_board);
-        assert_eq!(solver.sudoku_puzzle.configuration, valid_board);
+        assert_eq!(solver.board.configuration, valid_board.configuration);
         assert_eq!(solver.unsolved_spaces, vec![
             (0, 0),
             (6, 3),
             (8, 8)
         ]);
         assert_eq!(solver.percent_solved, 96.296295);
-        // assert_eq!(solver.solved_board.into_inner(), None);
+        assert_eq!(solver.solved_board.into_inner().is_none(), true);
     }
 
     #[test]
     #[should_panic]
-    fn constructor_works_invalid_board_invalid_rows() {
-        let invalid_board_rows = vec![
-            vec![ 0,7,3, 8,9,4, 5,1,2 ],
+    fn constructor_works_invalid_board() {
+        let invalid_board_spaces = SudokuBoard::new(&vec![
+            vec![ 6,7,3, 8,9,4, 5,1,2 ],
             vec![ 9,1,2, 7,3,5, 4,8,6 ],
             vec![ 8,4,5, 6,1,2, 9,7,3 ],
             vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 8,9,1 ],
+            vec![ 5,2,6, 4,7,3, 9,9,1 ],
             vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 0,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ]
-        ];
-        SudokuSolver::new(&invalid_board_rows);
-    }
+            vec![ 4,6,9, 1,2,8, 7,3,5 ],
+            vec![ 2,8,7, 3,5,6, 1,4,9 ],
+            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        ]);
 
-    #[test]
-    #[should_panic]
-    fn constructor_works_invalid_board_invalid_columns() {
-        let invalid_board_columns = vec![
-            vec![ 0,7,3, 8,9,4, 5,1 ],
-            vec![ 9,1,2, 7,3,5, 4,8 ],
-            vec![ 8,4,5, 6,1,2, 9,7 ],
-            vec![ 7,9,8, 2,6,1, 3,5 ],
-            vec![ 5,2,6, 4,7,3, 8,9 ],
-            vec![ 1,3,4, 5,8,9, 2,6 ],
-            vec![ 4,6,9, 0,2,8, 7,3 ],
-            vec![ 2,8,7, 3,5,6, 1,4 ],
-            vec![ 3,5,1, 9,4,7, 6,2 ]
-        ];
-        SudokuSolver::new(&invalid_board_columns);
+        SudokuSolver::new(&invalid_board_spaces);
     }
 
     #[test]
     fn solve_easy_works() {
-        let valid_board = vec![
+        let valid_board = SudokuBoard::new(&vec![
             vec![ 0,7,3, 8,9,4, 5,1,2 ],
             vec![ 9,1,2, 7,3,5, 4,8,6 ],
             vec![ 8,4,5, 0,0,2, 9,7,3 ],
@@ -165,7 +144,7 @@ mod tests {
             vec![ 4,6,9, 0,2,8, 7,3,5 ],
             vec![ 2,8,7, 3,5,6, 1,4,9 ],
             vec![ 3,5,1, 9,4,7, 6,2,0 ]
-        ];
+        ]);
         
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
@@ -185,7 +164,7 @@ mod tests {
 
     #[test]
     fn solve_medium_works() {
-        let valid_board = vec![
+        let valid_board = SudokuBoard::new(&vec![
             vec![ 7,8,0, 4,0,0, 1,2,0 ],
             vec![ 6,0,0, 0,7,5, 0,0,9 ],
             vec![ 0,0,0, 6,0,1, 0,7,8 ],
@@ -195,7 +174,7 @@ mod tests {
             vec![ 0,7,0, 3,0,0, 0,1,2 ],
             vec![ 1,2,0, 0,0,7, 4,0,0 ],
             vec![ 0,4,9, 2,0,6, 0,0,7 ]
-        ];
+        ]);
 
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
@@ -215,7 +194,7 @@ mod tests {
 
     #[test]
     fn solve_hard_works() {
-        let valid_board = vec![
+        let valid_board = SudokuBoard::new(&vec![
             vec![ 0,0,0, 0,0,0, 0,0,0 ],
             vec![ 0,0,2, 0,0,5, 0,4,0 ],
             vec![ 1,0,8, 0,4,0, 0,0,0 ],
@@ -225,7 +204,7 @@ mod tests {
             vec![ 3,0,1, 0,0,0, 0,8,0 ],
             vec![ 2,0,7, 0,0,0, 6,0,0 ],
             vec![ 0,0,0, 0,0,6, 1,3,9 ]
-        ];
+        ]);
 
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
@@ -245,7 +224,7 @@ mod tests {
 
     #[test]
     fn solve_caching_works() {
-        let valid_board = vec![
+        let valid_board = SudokuBoard::new(&vec![
             vec![ 0,0,0, 0,0,0, 0,0,0 ],
             vec![ 0,0,2, 0,0,5, 0,4,0 ],
             vec![ 1,0,8, 0,4,0, 0,0,0 ],
@@ -255,7 +234,7 @@ mod tests {
             vec![ 3,0,1, 0,0,0, 0,8,0 ],
             vec![ 2,0,7, 0,0,0, 6,0,0 ],
             vec![ 0,0,0, 0,0,6, 1,3,9 ]
-        ];
+        ]);
 
         let solver = SudokuSolver::new(&valid_board);
 
