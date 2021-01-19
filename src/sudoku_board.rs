@@ -48,7 +48,6 @@ impl SudokuBoard {
         for column_index in 0..=8 {
             let column = self.get_column(column_index);
             let column_without_unsolved_spaces = column.iter().filter(|&&value| value != 0).map(|value| *value).collect_vec();
-            println!("{:?}", column_without_unsolved_spaces);
             if column_without_unsolved_spaces.iter().unique().collect_vec().len() != column_without_unsolved_spaces.len() {
                 return false;
             }
