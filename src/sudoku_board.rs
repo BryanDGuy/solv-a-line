@@ -16,13 +16,13 @@ impl SudokuBoard {
         }
 
         return SudokuBoard {
-            configuration: sudoku_puzzle.clone()
+            configuration: sudoku_puzzle.to_vec()
         }
     }
 
     pub fn copy(other: &SudokuBoard) -> SudokuBoard {
         return SudokuBoard {
-            configuration: other.configuration.clone()
+            configuration: other.configuration.to_vec()
         }
     }
 
@@ -113,7 +113,7 @@ impl SudokuBoard {
         return nonet;
     }
 
-    pub fn print(&self) {
+    pub fn print(self) {
         for row in 0..=8 {
             println!("{:?}", self.configuration[row]);
         } 
