@@ -11,6 +11,10 @@ impl SudokuBoard {
             panic!("The board must be 9x9.");
         }
 
+        if sudoku_puzzle.iter().any(|row| row.iter().any(|value| *value > 9)) { // Values will not be negative because `u8` is used
+            panic!("All values must be [0..9] inclusive");
+        }
+
         return SudokuBoard {
             configuration: sudoku_puzzle.clone()
         }
@@ -164,6 +168,23 @@ mod test {
             vec![ 3,5,1, 9,4,7, 6,2 ]
         ];
         SudokuBoard::new(&invalid_board_columns);
+    }
+
+    #[test]
+    #[should_panic]
+    fn constructor_works_invalid_board_invalid_value() {
+        let invalid_board_value = vec![
+            vec![ 0,0,0, 0,0,0, 0,0,0 ],
+            vec![ 0,0,2, 0,0,5, 0,4,0 ],
+            vec![ 1,0,8, 0,4,0, 0,0,0 ],
+            vec![ 0,0,0, 0,0,0, 4,0,3 ],
+            vec![ 0,0,6, 0,5,0, 0,0,10 ],
+            vec![ 0,0,0, 0,2,0, 0,0,6 ],
+            vec![ 3,0,1, 0,0,0, 0,8,0 ],
+            vec![ 2,0,7, 0,0,0, 6,0,0 ],
+            vec![ 0,0,0, 0,0,6, 1,3,9 ]
+        ];
+        SudokuBoard::new(&invalid_board_value);
     }
 
     #[test]
