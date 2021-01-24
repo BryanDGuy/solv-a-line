@@ -37,7 +37,7 @@ of solve(), there will be no cost on memory and CPU usage.
 let solved_board = sudoku_solver.solve();
 solved_board.print();
 
-# Output:
+### Output ###
 [4, 3, 9, 6, 8, 2, 7, 1, 5]
 [6, 7, 2, 1, 3, 5, 9, 4, 8]
 [1, 5, 8, 7, 4, 9, 3, 6, 2]
