@@ -112,6 +112,12 @@ impl SudokuBoard {
         }
         return nonet;
     }
+
+    pub fn print(&self) {
+        for row in 0..=8 {
+            println!("{:?}", self.configuration[row]);
+        } 
+    }
 }
 
 #[cfg(test)]
