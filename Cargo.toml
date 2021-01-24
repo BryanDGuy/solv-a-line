@@ -1,5 +1,5 @@
 [package]
-name = "sudoku-solver"
+name = "solv-a-line"
 version = "0.1.0"
 authors = ["BryanDGuy"]
 edition = "2018"
