@@ -38,7 +38,6 @@ impl SudokuSolver {
         // 6. If there is/are valid value(s), plug in the first valid and move onto step 1 for the next space to solve.
         // 7. If not, move back to the previous space that was solved and plug in the next valid value.
 
-
         // Optimization 1: Keep solved board stored in private variable for cached access
         if self.solved_board.borrow().is_some() {
             return SudokuBoard::copy(self.solved_board.borrow().as_ref().unwrap());
