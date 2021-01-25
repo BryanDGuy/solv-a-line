@@ -74,6 +74,10 @@ impl SudokuSolver {
                 unsolved_spaces_index += 1;
             }
             else { // Need to backtrack
+                if unsolved_spaces_index == 0 {
+                    panic!("This board is unsolvable");
+                }
+                
                 attempted_values.remove(&(row_index, column_index));
                 unsolved_spaces_index -= 1;
             }
