@@ -1,6 +1,8 @@
 use itertools::Itertools;
 use std::cell::RefCell;
-use std::collections::HashMap;
+use std::collections::{ HashMap, HashSet };
+use std::iter::FromIterator;
+use std::time::Instant;
 use crate::sudoku_board::SudokuBoard;
 
 pub struct SudokuSolver {
@@ -48,24 +50,45 @@ impl SudokuSolver {
         let mut attempted_values: HashMap<(usize, usize), Vec<u8>> = HashMap::new();
         let mut unsolved_spaces_index = 0;
 
+        let mut benchmark_timing = HashMap::new();
+
+        let mut loop_start = Instant::now();
         while !solved_board.all_spaces_solved() {
+            let loop_end = Instant::now();
+            let all_spaces_solved_timing = loop_end.duration_since(loop_start).as_nanos();
+            *benchmark_timing.entry("all_spaces_solved").or_insert(0) += all_spaces_solved_timing;
+
             let row_index = self.unsolved_spaces[unsolved_spaces_index].0;
             let column_index = self.unsolved_spaces[unsolved_spaces_index].1;
             let nonet_index = 3 * ((9 * row_index + column_index) / 27) + ((9 * row_index + column_index) / 3 % 3);
 
             solved_board.configuration[row_index][column_index] = 0; // Set back to 0 in the case this was a back-tracked space
             let previously_attempted_values = attempted_values.entry((row_index, column_index)).or_default();
+
+            let row_start = Instant::now();
             let row = solved_board.get_row(row_index);
+            let get_row_end = Instant::now();
             let column = solved_board.get_column(column_index);
+            let get_column_end = Instant::now();
             let nonet = solved_board.get_nonet(nonet_index);
+            let get_nonet_end = Instant::now();
 
-            let mut invalid_value_candidates = Vec::new();
-            invalid_value_candidates.extend(previously_attempted_values.iter());
-            invalid_value_candidates.extend(row.iter().filter(|&&value| value != 0));
-            invalid_value_candidates.extend(column.iter().filter(|&&value| value != 0));
-            invalid_value_candidates.extend(nonet.iter().filter(|&&value| value != 0));
-            invalid_value_candidates = invalid_value_candidates.iter().unique().map(|value| *value).collect_vec();
+            *benchmark_timing.entry("get_row").or_insert(0) += get_row_end.duration_since(row_start).as_nanos();
+            *benchmark_timing.entry("get_column").or_insert(0) += get_column_end.duration_since(get_row_end).as_nanos();
+            *benchmark_timing.entry("get_nonet").or_insert(0) += get_nonet_end.duration_since(get_column_end).as_nanos();
 
+            let invalid_start = Instant::now();
+            let mut invalid_value_candidates_vec: Vec<u8> = Vec::new();
+            invalid_value_candidates_vec.extend(previously_attempted_values.iter());
+            invalid_value_candidates_vec.extend(row.iter().filter(|&&value| value != 0));
+            invalid_value_candidates_vec.extend(column.iter().filter(|&&value| value != 0));
+            invalid_value_candidates_vec.extend(nonet.iter().filter(|&&value| value != 0));
+            let invalid_value_candidates: HashSet<&u8> = HashSet::from_iter(invalid_value_candidates_vec.iter());
+            let invalid_end = Instant::now();
+
+            *benchmark_timing.entry("invalid_calculation").or_insert(0) += invalid_end.duration_since(invalid_start).as_nanos();
+
+            let valid_start = Instant::now();
             let valid_value_candidates = all_value_candidates.iter().filter(|value| !invalid_value_candidates.contains(value)).collect_vec();
             if valid_value_candidates.len() > 0 { // Found a valid value to use
                 solved_board.configuration[row_index][column_index] = *valid_value_candidates[0];
@@ -76,7 +99,15 @@ impl SudokuSolver {
                 attempted_values.remove(&(row_index, column_index));
                 unsolved_spaces_index -= 1;
             }
+            let valid_end = Instant::now();
+            
+            *benchmark_timing.entry("valid_calculation").or_insert(0) += valid_end.duration_since(valid_start).as_nanos();
+
+            loop_start = Instant::now();
         };
+
+        println!("benchmarkings: {:?}", benchmark_timing);
+        println!("max: {:?}", benchmark_timing.iter().max_by(|x, y| x.1.cmp(y.1)).unwrap());
 
         self.solved_board.replace(Some(solved_board));
         return SudokuBoard::copy(self.solved_board.borrow().as_ref().unwrap());
