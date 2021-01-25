@@ -1,3 +1,4 @@
+use std::fmt::{ Display, Formatter, Result };
 use nalgebra::DMatrix;
 use std::collections::HashSet;
 use std::iter::FromIterator;
@@ -5,6 +6,18 @@ use std::iter::FromIterator;
 #[derive(Debug)]
 pub struct SudokuBoard {
     configuration: DMatrix<u8>
+}
+
+impl Display for SudokuBoard {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "{}", self.configuration)
+    }
+}
+
+impl PartialEq for SudokuBoard {
+    fn eq(&self, other: &SudokuBoard) -> bool {
+        self.configuration == other.configuration
+    }
 }
 
 impl SudokuBoard {
@@ -94,10 +107,6 @@ impl SudokuBoard {
         }
 
         return self.configuration.slice((starting_row, starting_column), (3, 3)).iter().map(|value| *value).collect();
-    }
-
-    pub fn get_board(&self) -> Vec<u8> {
-        return self.configuration.iter().map(|value| *value).collect();
     }
 
     pub fn set_value(&mut self, row: usize, column: usize, value: u8) {

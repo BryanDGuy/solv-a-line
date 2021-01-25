@@ -104,7 +104,7 @@ mod tests {
         ]);
         
         let solver = SudokuSolver::new(&valid_board);
-        assert_eq!(solver.board.get_board(), valid_board.get_board());
+        assert_eq!(solver.board, valid_board);
         assert_eq!(solver.unsolved_spaces, vec![
             (0, 0),
             (6, 3),
@@ -149,7 +149,7 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
 
-        assert_eq!(solved_board.get_board(), SudokuBoard::new(&[
+        assert_eq!(solved_board, SudokuBoard::new(&[
             6,7,3, 8,9,4, 5,1,2,
             9,1,2, 7,3,5, 4,8,6,
             8,4,5, 6,1,2, 9,7,3,
@@ -159,7 +159,7 @@ mod tests {
             4,6,9, 1,2,8, 7,3,5,
             2,8,7, 3,5,6, 1,4,9,
             3,5,1, 9,4,7, 6,2,8
-        ]).get_board());
+        ]));
     }
 
     #[test]
@@ -179,7 +179,7 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
 
-        assert_eq!(solved_board.get_board(), SudokuBoard::new(&[
+        assert_eq!(solved_board, SudokuBoard::new(&[
             7,8,5, 4,3,9, 1,2,6,
             6,1,2, 8,7,5, 3,4,9,
             4,9,3, 6,2,1, 5,7,8,
@@ -189,7 +189,7 @@ mod tests {
             5,7,8, 3,9,4, 6,1,2,
             1,2,6, 5,8,7, 4,9,3,
             3,4,9, 2,1,6, 8,5,7
-        ]).get_board());
+        ]));
     }
 
     #[test]
@@ -209,7 +209,7 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
 
-        assert_eq!(solved_board.get_board(), SudokuBoard::new(&[
+        assert_eq!(solved_board, SudokuBoard::new(&[
             4,3,9, 6,8,2, 7,1,5,
             6,7,2, 1,3,5, 9,4,8,
             1,5,8, 7,4,9, 3,6,2,
@@ -219,7 +219,7 @@ mod tests {
             3,6,1, 5,9,4, 2,8,7,
             2,9,7, 3,1,8, 6,5,4,
             5,8,4, 2,7,6, 1,3,9
-        ]).get_board());
+        ]));
     }
 
     #[test]
@@ -249,7 +249,7 @@ mod tests {
         let duration_second = end_second.duration_since(start_second).as_millis();
 
         println!("Caching test took {}ms to solve in the first iteration and {}ms in the second iteration.", duration_first, duration_second);
-        assert_eq!(solved_board_first.get_board(), solved_board_second.get_board());
+        assert_eq!(solved_board_first, solved_board_second);
         assert!(duration_second < duration_first);
     }
 }
