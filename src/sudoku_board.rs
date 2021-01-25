@@ -73,11 +73,7 @@ impl SudokuBoard {
     }
 
     pub fn get_row(&self, row_index: usize) -> Vec<u8> {
-        let mut row = Vec::new();
-        for column_index in 0..=8 {
-            row.push(self.configuration[row_index][column_index]);
-        }
-        return row;
+        return self.configuration[row_index].to_vec();
     }
 
     pub fn get_column(&self, column_index: usize) -> Vec<u8> {
