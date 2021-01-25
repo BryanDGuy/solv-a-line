@@ -86,10 +86,11 @@ impl SudokuSolver {
             *benchmark_timing.entry("invalid_candidates").or_insert(0) += invalid_end.duration_since(invalid_start).as_micros();
 
             let valid_start = Instant::now();
-            let valid_value_candidates = all_value_candidates.iter().filter(|value| !invalid_value_candidates.contains(value)).collect_vec();
-            if valid_value_candidates.len() > 0 { // Found a valid value to use
-                solved_board.configuration[row_index][column_index] = *valid_value_candidates[0];
-                attempted_values.entry((row_index, column_index)).or_default().push(*valid_value_candidates[0]);
+            let mut valid_value_candidates = all_value_candidates.iter().filter(|value| !invalid_value_candidates.contains(value));
+            let first_value = valid_value_candidates.next();
+            if first_value.is_some() { // Found a valid value to use
+                solved_board.configuration[row_index][column_index] = *first_value.unwrap();
+                attempted_values.entry((row_index, column_index)).or_default().push(*first_value.unwrap());
                 unsolved_spaces_index += 1;
             }
             else { // Need to backtrack
