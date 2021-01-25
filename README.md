@@ -4,8 +4,7 @@ A Sudoku Solver Library written in Rust that uses back-tracking to solve.
 
 ## Basic Usage
 
-Pass in a reference to a 2D vector to the SudokuBoard constructor. This will validate that you are
-sending in a valid starting configuration such as it being 9x9 and that all values are [0..9] inclusive.
+Pass in a reference to a 2D vector to the SudokuBoard constructor. This will validate that all values are [0..9] inclusive.
 
 ```rust
 let sudoku_board = SudokuBoard::new(&[
@@ -21,9 +20,8 @@ let sudoku_board = SudokuBoard::new(&[
 ]);
 ```
 
-Pass in a reference to this SudokuBoard to the SudokuSolver constructor. This will validate that your
-starting configuration doesn't immediately break the rules of sudoku (such as multiple of the same values
-in a row/column/nonet).
+Pass in a reference to this SudokuBoard to the SudokuSolver constructor. This will validate that your starting 
+configuration doesn't immediately break the rules of sudoku (multiple of the same values in a row/column/nonet).
 
 ```rust
 let sudoku_solver = SudokuSolver::new(&sudoku_board);
