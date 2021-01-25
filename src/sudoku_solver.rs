@@ -52,7 +52,7 @@ impl SudokuSolver {
             let row_index = self.unsolved_spaces[unsolved_spaces_index].0;
             let column_index = self.unsolved_spaces[unsolved_spaces_index].1;
             let nonet_index = 3 * ((9 * row_index + column_index) / 27) + ((9 * row_index + column_index) / 3 % 3);
-            solved_board.set_value(row_index, column_index, 0); // Set back to 0 in the case this was a back-tracked space
+            solved_board[(row_index, column_index)] = 0; // Set back to 0 in the case this was a back-tracked space
 
             let row = solved_board.get_row(row_index);
             let column = solved_board.get_column(column_index);
@@ -69,7 +69,7 @@ impl SudokuSolver {
             let mut valid_value_candidates = all_value_candidates.iter().filter(|value| !invalid_value_candidates.contains(value));
             let first_value = valid_value_candidates.next();
             if first_value.is_some() { // Found a valid value to use
-                solved_board.set_value(row_index, column_index, *first_value.unwrap());
+                solved_board[(row_index, column_index)] = *first_value.unwrap();
                 attempted_values.entry((row_index, column_index)).or_default().push(*first_value.unwrap());
                 unsolved_spaces_index += 1;
             }

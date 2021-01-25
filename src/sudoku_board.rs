@@ -2,6 +2,7 @@ use std::fmt::{ Display, Formatter, Result };
 use nalgebra::DMatrix;
 use std::collections::HashSet;
 use std::iter::FromIterator;
+use std::ops::{ Index, IndexMut };
 
 #[derive(Debug)]
 pub struct SudokuBoard {
@@ -17,6 +18,20 @@ impl Display for SudokuBoard {
 impl PartialEq for SudokuBoard {
     fn eq(&self, other: &SudokuBoard) -> bool {
         self.configuration == other.configuration
+    }
+}
+
+impl Index<(usize, usize)> for SudokuBoard {
+    type Output = u8;
+
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        &self.configuration[(index.0, index.1)]
+    }
+}
+
+impl IndexMut<(usize, usize)> for SudokuBoard {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        &mut self.configuration[(index.0, index.1)]
     }
 }
 
@@ -107,10 +122,6 @@ impl SudokuBoard {
         }
 
         return self.configuration.slice((starting_row, starting_column), (3, 3)).iter().map(|value| *value).collect();
-    }
-
-    pub fn set_value(&mut self, row: usize, column: usize, value: u8) {
-        self.configuration[(row, column)] = value;
     }
 }
 
