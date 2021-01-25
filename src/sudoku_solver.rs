@@ -55,12 +55,15 @@ impl SudokuSolver {
         while unsolved_spaces_index < self.unsolved_spaces.len() {
             let loop_end = Instant::now();
             let all_spaces_solved_timing = loop_end.duration_since(loop_start).as_micros();
-            *benchmark_timing.entry("all_spaces_solved").or_insert(0) += all_spaces_solved_timing;
+            *benchmark_timing.entry("loop check").or_insert(0) += all_spaces_solved_timing;
 
+            let indexes_start =  Instant::now();
             let row_index = self.unsolved_spaces[unsolved_spaces_index].0;
             let column_index = self.unsolved_spaces[unsolved_spaces_index].1;
             let nonet_index = 3 * ((9 * row_index + column_index) / 27) + ((9 * row_index + column_index) / 3 % 3);
             solved_board.configuration[row_index][column_index] = 0; // Set back to 0 in the case this was a back-tracked space
+            let indexes_end = Instant::now();
+            *benchmark_timing.entry("get_indexes").or_insert(0) += indexes_end.duration_since(indexes_start).as_micros();
 
             let row_start = Instant::now();
             let row = solved_board.get_row(row_index);
