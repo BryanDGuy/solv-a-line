@@ -1,5 +1,6 @@
-use itertools::Itertools;
 use nalgebra::DMatrix;
+use std::collections::HashSet;
+use std::iter::FromIterator;
 
 #[derive(Debug)]
 pub struct SudokuBoard {
@@ -40,24 +41,27 @@ impl SudokuBoard {
 
         for row_index in 0..=8 {
             let row = self.get_row(row_index);
-            let row_without_unsolved_spaces = row.iter().filter(|&&value| value != 0).map(|value| *value).collect_vec();
-            if row_without_unsolved_spaces.iter().unique().collect_vec().len() != row_without_unsolved_spaces.len() {
+            let row_without_unsolved_spaces: Vec<u8> = row.iter().filter(|&&value| value != 0).map(|value| *value).collect();
+            let row_without_unsolved_spaces_set: HashSet<u8> = HashSet::from_iter(row_without_unsolved_spaces.iter().map(|value| *value));
+            if row_without_unsolved_spaces_set.len() != row_without_unsolved_spaces.len() {
                 return false;
             }
         }
 
         for column_index in 0..=8 {
             let column = self.get_column(column_index);
-            let column_without_unsolved_spaces = column.iter().filter(|&&value| value != 0).map(|value| *value).collect_vec();
-            if column_without_unsolved_spaces.iter().unique().collect_vec().len() != column_without_unsolved_spaces.len() {
+            let column_without_unsolved_spaces: Vec<u8> = column.iter().filter(|&&value| value != 0).map(|value| *value).collect();
+            let column_without_unsolved_spaces_set: HashSet<u8> = HashSet::from_iter(column_without_unsolved_spaces.iter().map(|value| *value));
+            if column_without_unsolved_spaces_set.len() != column_without_unsolved_spaces.len() {
                 return false;
             }
         }
 
         for nonet_index in 0..=8 {
             let nonet = self.get_nonet(nonet_index);
-            let nonet_without_unsolved_spaces = nonet.iter().filter(|&&value| value != 0).map(|value| *value).collect_vec();
-            if nonet_without_unsolved_spaces.iter().unique().collect_vec().len() != nonet_without_unsolved_spaces.len() {
+            let nonet_without_unsolved_spaces: Vec<u8> = nonet.iter().filter(|&&value| value != 0).map(|value| *value).collect();
+            let nonet_without_unsolved_spaces_set: HashSet<u8> = HashSet::from_iter(nonet_without_unsolved_spaces.iter().map(|value| *value));
+            if nonet_without_unsolved_spaces_set.len() != nonet_without_unsolved_spaces.len() {
                 return false;
             }
         }
@@ -66,11 +70,11 @@ impl SudokuBoard {
     }
 
     pub fn get_row(&self, row_index: usize) -> Vec<u8> {
-        return self.configuration.row(row_index).iter().map(|value| *value).collect_vec();
+        return self.configuration.row(row_index).iter().map(|value| *value).collect();
     }
 
     pub fn get_column(&self, column_index: usize) -> Vec<u8> {
-        return self.configuration.column(column_index).iter().map(|value| *value).collect_vec();
+        return self.configuration.column(column_index).iter().map(|value| *value).collect();
     }
 
     pub fn get_nonet(&self, nonet_index: usize) -> Vec<u8> {
@@ -89,11 +93,11 @@ impl SudokuBoard {
             _ => { panic!("An invalid nonet_index was passed into 'get_nonet', it was {}", nonet_index)}
         }
 
-        return self.configuration.slice((starting_row, starting_column), (3, 3)).iter().map(|value| *value).collect_vec();
+        return self.configuration.slice((starting_row, starting_column), (3, 3)).iter().map(|value| *value).collect();
     }
 
     pub fn get_board(&self) -> Vec<u8> {
-        return self.configuration.iter().map(|value| *value).collect_vec();
+        return self.configuration.iter().map(|value| *value).collect();
     }
 
     pub fn set_value(&mut self, row: usize, column: usize, value: u8) {
