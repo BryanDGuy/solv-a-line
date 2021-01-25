@@ -109,7 +109,7 @@ impl SudokuSolver {
         let mut sorted_timings = benchmark_timing.iter().collect_vec();
         sorted_timings.sort_by(|x, y| y.1.cmp(x.1));
         println!("sorted benchmarks: {:?}", sorted_timings);
-
+        
         self.solved_board.replace(Some(solved_board));
         return SudokuBoard::copy(self.solved_board.borrow().as_ref().unwrap());
     }

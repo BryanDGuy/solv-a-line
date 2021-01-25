@@ -98,8 +98,8 @@ impl SudokuBoard {
 
     pub fn print(&self) {
         for row in 0..=8 {
-            println!("{:?}", self.configuration[row]);
-        } 
+            println!("{:?}", self.get_row(row));
+        }
     }
 }
 
