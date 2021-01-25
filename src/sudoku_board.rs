@@ -1,28 +1,29 @@
 use itertools::Itertools;
+use nalgebra::DMatrix;
 
 #[derive(Debug)]
 pub struct SudokuBoard {
-    pub configuration: Vec<Vec<u8>>
+    pub configuration: DMatrix<u8>
 }
 
 impl SudokuBoard {
-    pub fn new(sudoku_puzzle: &Vec<Vec<u8>>) -> SudokuBoard {
-        if sudoku_puzzle.len() != 9 || sudoku_puzzle.iter().any(|row| row.len() != 9) {
+    pub fn new(sudoku_puzzle: &[u8]) -> SudokuBoard {
+        if sudoku_puzzle.len() != 81 {
             panic!("The board must be 9x9.");
         }
 
-        if sudoku_puzzle.iter().any(|row| row.iter().any(|value| *value > 9)) { // Values will not be negative because `u8` is used
+        if sudoku_puzzle.iter().any(|value| *value > 9) { // Values will not be negative because `u8` is used
             panic!("All values must be [0..9] inclusive");
         }
 
         return SudokuBoard {
-            configuration: sudoku_puzzle.to_vec()
+            configuration: DMatrix::from_row_slice(9, 9, sudoku_puzzle)
         }
     }
 
     pub fn copy(other: &SudokuBoard) -> SudokuBoard {
         return SudokuBoard {
-            configuration: other.configuration.to_vec()
+            configuration: other.configuration.clone_owned()
         }
     }
 
@@ -30,7 +31,7 @@ impl SudokuBoard {
         let mut unsolved_spaces = Vec::new();
         for row in 0..=8 {
             for column in 0..=8 {
-                if self.configuration[row][column] == 0 {
+                if self.configuration[(row, column)] == 0 {
                     unsolved_spaces.push((row, column));
                 }
             }
@@ -69,15 +70,11 @@ impl SudokuBoard {
     }
 
     pub fn get_row(&self, row_index: usize) -> Vec<u8> {
-        return self.configuration[row_index].to_vec();
+        return self.configuration.row(row_index).iter().map(|value| *value).collect_vec();
     }
 
     pub fn get_column(&self, column_index: usize) -> Vec<u8> {
-        let mut column = Vec::new();
-        for row_index in 0..=8 {
-            column.push(self.configuration[row_index][column_index]);
-        }
-        return column;
+        return self.configuration.column(column_index).iter().map(|value| *value).collect_vec();
     }
 
     pub fn get_nonet(&self, nonet_index: usize) -> Vec<u8> {
@@ -96,13 +93,7 @@ impl SudokuBoard {
             _ => { panic!("An invalid nonet_index was passed into 'get_nonet', it was {}", nonet_index)}
         }
 
-        let mut nonet = Vec::new();
-        for row_index in starting_row..=(starting_row+2) {
-            for column_index in starting_column..=(starting_column+2) {
-                nonet.push(self.configuration[row_index][column_index]);
-            }
-        }
-        return nonet;
+        return self.configuration.slice((starting_row, starting_column), (3, 3)).iter().map(|value| *value).collect_vec();
     }
 
     pub fn print(&self) {
@@ -118,35 +109,35 @@ mod test {
 
     #[test]
     fn constructor_works_valid_board() {
-        let valid_configuration = vec![
-            vec![ 0,0,0, 0,0,0, 0,0,0 ],
-            vec![ 0,0,2, 0,0,5, 0,4,0 ],
-            vec![ 1,0,8, 0,4,0, 0,0,0 ],
-            vec![ 0,0,0, 0,0,0, 4,0,3 ],
-            vec![ 0,0,6, 0,5,0, 0,0,1 ],
-            vec![ 0,0,0, 0,2,0, 0,0,6 ],
-            vec![ 3,0,1, 0,0,0, 0,8,0 ],
-            vec![ 2,0,7, 0,0,0, 6,0,0 ],
-            vec![ 0,0,0, 0,0,6, 1,3,9 ]
+        let valid_configuration = [
+            0,0,0, 0,0,0, 0,0,0,
+            0,0,2, 0,0,5, 0,4,0,
+            1,0,8, 0,4,0, 0,0,0,
+            0,0,0, 0,0,0, 4,0,3,
+            0,0,6, 0,5,0, 0,0,1,
+            0,0,0, 0,2,0, 0,0,6,
+            3,0,1, 0,0,0, 0,8,0,
+            2,0,7, 0,0,0, 6,0,0,
+            0,0,0, 0,0,6, 1,3,9
         ];
 
         let valid_board = SudokuBoard::new(&valid_configuration);
 
-        assert_eq!(valid_board.configuration, valid_configuration);
+        assert_eq!(valid_board.configuration, DMatrix::from_row_slice(9, 9, &valid_configuration));
     }
 
     #[test]
     #[should_panic]
     fn constructor_works_invalid_board_invalid_rows() {
-        let invalid_board_rows = vec![
-            vec![ 0,7,3, 8,9,4, 5,1,2 ],
-            vec![ 9,1,2, 7,3,5, 4,8,6 ],
-            vec![ 8,4,5, 6,1,2, 9,7,3 ],
-            vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 8,9,1 ],
-            vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 0,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ]
+        let invalid_board_rows = [
+            0,7,3, 8,9,4, 5,1,2,
+            9,1,2, 7,3,5, 4,8,6,
+            8,4,5, 6,1,2, 9,7,3,
+            7,9,8, 2,6,1, 3,5,4,
+            5,2,6, 4,7,3, 8,9,1,
+            1,3,4, 5,8,9, 2,6,7,
+            4,6,9, 0,2,8, 7,3,5,
+            2,8,7, 3,5,6, 1,4,9
         ];
         SudokuBoard::new(&invalid_board_rows);
     }
@@ -154,16 +145,16 @@ mod test {
     #[test]
     #[should_panic]
     fn constructor_works_invalid_board_invalid_columns() {
-        let invalid_board_columns = vec![
-            vec![ 0,7,3, 8,9,4, 5,1 ],
-            vec![ 9,1,2, 7,3,5, 4,8 ],
-            vec![ 8,4,5, 6,1,2, 9,7 ],
-            vec![ 7,9,8, 2,6,1, 3,5 ],
-            vec![ 5,2,6, 4,7,3, 8,9 ],
-            vec![ 1,3,4, 5,8,9, 2,6 ],
-            vec![ 4,6,9, 0,2,8, 7,3 ],
-            vec![ 2,8,7, 3,5,6, 1,4 ],
-            vec![ 3,5,1, 9,4,7, 6,2 ]
+        let invalid_board_columns = [
+            0,7,3, 8,9,4, 5,1,
+            9,1,2, 7,3,5, 4,8,
+            8,4,5, 6,1,2, 9,7,
+            7,9,8, 2,6,1, 3,5,
+            5,2,6, 4,7,3, 8,9,
+            1,3,4, 5,8,9, 2,6,
+            4,6,9, 0,2,8, 7,3,
+            2,8,7, 3,5,6, 1,4,
+            3,5,1, 9,4,7, 6,2
         ];
         SudokuBoard::new(&invalid_board_columns);
     }
@@ -171,32 +162,32 @@ mod test {
     #[test]
     #[should_panic]
     fn constructor_works_invalid_board_invalid_value() {
-        let invalid_board_value = vec![
-            vec![ 0,0,0, 0,0,0, 0,0,0 ],
-            vec![ 0,0,2, 0,0,5, 0,4,0 ],
-            vec![ 1,0,8, 0,4,0, 0,0,0 ],
-            vec![ 0,0,0, 0,0,0, 4,0,3 ],
-            vec![ 0,0,6, 0,5,0, 0,0,10 ],
-            vec![ 0,0,0, 0,2,0, 0,0,6 ],
-            vec![ 3,0,1, 0,0,0, 0,8,0 ],
-            vec![ 2,0,7, 0,0,0, 6,0,0 ],
-            vec![ 0,0,0, 0,0,6, 1,3,9 ]
+        let invalid_board_value = [
+            0,0,0, 0,0,0, 0,0,0,
+            0,0,2, 0,0,5, 0,4,0,
+            1,0,8, 0,4,0, 0,0,0,
+            0,0,0, 0,0,0, 4,0,3,
+            0,0,6, 0,5,0, 0,0,10,
+            0,0,0, 0,2,0, 0,0,6,
+            3,0,1, 0,0,0, 0,8,0,
+            2,0,7, 0,0,0, 6,0,0,
+            0,0,0, 0,0,6, 1,3,9
         ];
         SudokuBoard::new(&invalid_board_value);
     }
 
     #[test]
     fn get_unsolved_spaces_works() {
-        let board_with_zeroes = SudokuBoard::new(&vec![
-            vec![ 0,7,3, 8,9,4, 5,1,2 ],
-            vec![ 9,1,2, 7,3,5, 4,8,6 ],
-            vec![ 8,4,5, 6,1,2, 9,7,3 ],
-            vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 8,9,1 ],
-            vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 0,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ],
-            vec![ 3,5,1, 9,4,7, 6,2,0 ]
+        let board_with_zeroes = SudokuBoard::new(&[
+            0,7,3, 8,9,4, 5,1,2,
+            9,1,2, 7,3,5, 4,8,6,
+            8,4,5, 6,1,2, 9,7,3,
+            7,9,8, 2,6,1, 3,5,4,
+            5,2,6, 4,7,3, 8,9,1,
+            1,3,4, 5,8,9, 2,6,7,
+            4,6,9, 0,2,8, 7,3,5,
+            2,8,7, 3,5,6, 1,4,9,
+            3,5,1, 9,4,7, 6,2,0
         ]);
 
         let unsolved_spaces = board_with_zeroes.get_unsolved_spaces();
@@ -210,27 +201,27 @@ mod test {
 
     #[test]
     fn all_spaces_valid_works() {
-        let invalid_board_spaces = vec![
-            vec![ 6,7,3, 8,9,4, 5,1,2 ],
-            vec![ 9,1,2, 7,3,5, 4,8,6 ],
-            vec![ 8,4,5, 6,1,2, 9,7,3 ],
-            vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 9,9,1 ],
-            vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 1,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ],
-            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        let invalid_board_spaces = [
+            6,7,3, 8,9,4, 5,1,2,
+            9,1,2, 7,3,5, 4,8,6,
+            8,4,5, 6,1,2, 9,7,3,
+            7,9,8, 2,6,1, 3,5,4,
+            5,2,6, 4,7,3, 9,9,1,
+            1,3,4, 5,8,9, 2,6,7,
+            4,6,9, 1,2,8, 7,3,5,
+            2,8,7, 3,5,6, 1,4,9,
+            3,5,1, 9,4,7, 6,2,8
         ];
-        let valid_board_spaces = vec![
-            vec![ 6,7,3, 8,9,4, 5,1,2 ],
-            vec![ 9,1,2, 7,3,5, 4,8,6 ],
-            vec![ 8,4,5, 6,1,2, 9,7,3 ],
-            vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 8,9,1 ],
-            vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 1,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ],
-            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        let valid_board_spaces = [
+            6,7,3, 8,9,4, 5,1,2,
+            9,1,2, 7,3,5, 4,8,6,
+            8,4,5, 6,1,2, 9,7,3,
+            7,9,8, 2,6,1, 3,5,4,
+            5,2,6, 4,7,3, 8,9,1,
+            1,3,4, 5,8,9, 2,6,7,
+            4,6,9, 1,2,8, 7,3,5,
+            2,8,7, 3,5,6, 1,4,9,
+            3,5,1, 9,4,7, 6,2,8
         ];
 
         let invalid_board = SudokuBoard::new(&invalid_board_spaces);
@@ -242,16 +233,16 @@ mod test {
 
     #[test]
     fn get_row_works() {
-        let valid_board = SudokuBoard::new(&vec![
-            vec![ 6,7,3, 8,9,4, 5,1,2 ],
-            vec![ 9,1,2, 7,3,5, 4,8,6 ],
-            vec![ 8,4,5, 6,1,2, 9,7,3 ],
-            vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 8,9,1 ],
-            vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 1,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ],
-            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        let valid_board = SudokuBoard::new(&[
+            6,7,3, 8,9,4, 5,1,2,
+            9,1,2, 7,3,5, 4,8,6,
+            8,4,5, 6,1,2, 9,7,3,
+            7,9,8, 2,6,1, 3,5,4,
+            5,2,6, 4,7,3, 8,9,1,
+            1,3,4, 5,8,9, 2,6,7,
+            4,6,9, 1,2,8, 7,3,5,
+            2,8,7, 3,5,6, 1,4,9,
+            3,5,1, 9,4,7, 6,2,8
         ]);
 
         let mut all_rows: Vec<Vec<u8>> = Vec::new();
@@ -274,16 +265,16 @@ mod test {
 
     #[test]
     fn get_column_works() {
-        let valid_board = SudokuBoard::new(&vec![
-            vec![ 6,7,3, 8,9,4, 5,1,2 ],
-            vec![ 9,1,2, 7,3,5, 4,8,6 ],
-            vec![ 8,4,5, 6,1,2, 9,7,3 ],
-            vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 8,9,1 ],
-            vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 1,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ],
-            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        let valid_board = SudokuBoard::new(&[
+            6,7,3, 8,9,4, 5,1,2,
+            9,1,2, 7,3,5, 4,8,6,
+            8,4,5, 6,1,2, 9,7,3,
+            7,9,8, 2,6,1, 3,5,4,
+            5,2,6, 4,7,3, 8,9,1,
+            1,3,4, 5,8,9, 2,6,7,
+            4,6,9, 1,2,8, 7,3,5,
+            2,8,7, 3,5,6, 1,4,9,
+            3,5,1, 9,4,7, 6,2,8
         ]);
 
         let mut all_columns: Vec<Vec<u8>> = Vec::new();
@@ -306,16 +297,16 @@ mod test {
 
     #[test]
     fn get_nonet_works() {
-        let valid_board = SudokuBoard::new(&vec![
-            vec![ 6,7,3, 8,9,4, 5,1,2 ],
-            vec![ 9,1,2, 7,3,5, 4,8,6 ],
-            vec![ 8,4,5, 6,1,2, 9,7,3 ],
-            vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 8,9,1 ],
-            vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 1,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ],
-            vec![ 3,5,1, 9,4,7, 6,2,8 ]
+        let valid_board = SudokuBoard::new(&[
+            6,7,3, 8,9,4, 5,1,2,
+            9,1,2, 7,3,5, 4,8,6,
+            8,4,5, 6,1,2, 9,7,3,
+            7,9,8, 2,6,1, 3,5,4,
+            5,2,6, 4,7,3, 8,9,1,
+            1,3,4, 5,8,9, 2,6,7,
+            4,6,9, 1,2,8, 7,3,5,
+            2,8,7, 3,5,6, 1,4,9,
+            3,5,1, 9,4,7, 6,2,8
         ]);
 
         let mut all_nonets: Vec<Vec<u8>> = Vec::new();
@@ -324,15 +315,15 @@ mod test {
         }
 
         assert_eq!(all_nonets, vec![
-            vec![ 6,7,3, 9,1,2, 8,4,5 ],
-            vec![ 8,9,4, 7,3,5, 6,1,2 ],
-            vec![ 5,1,2, 4,8,6, 9,7,3 ],
-            vec![ 7,9,8, 5,2,6, 1,3,4 ],
-            vec![ 2,6,1, 4,7,3, 5,8,9 ],
-            vec![ 3,5,4, 8,9,1, 2,6,7 ],
-            vec![ 4,6,9, 2,8,7, 3,5,1 ],
-            vec![ 1,2,8, 3,5,6, 9,4,7 ],
-            vec![ 7,3,5, 1,4,9, 6,2,8 ]
+            vec![ 6,9,8, 7,1,4, 3,2,5 ],
+            vec![ 8,7,6, 9,3,1, 4,5,2 ],
+            vec![ 5,4,9, 1,8,7, 2,6,3 ],
+            vec![ 7,5,1, 9,2,3, 8,6,4 ],
+            vec![ 2,4,5, 6,7,8, 1,3,9 ],
+            vec![ 3,8,2, 5,9,6, 4,1,7 ],
+            vec![ 4,2,3, 6,8,5, 9,7,1 ],
+            vec![ 1,3,9, 2,5,4, 8,6,7 ],
+            vec![ 7,1,6, 3,4,2, 5,9,8 ]
         ]);
     }
 }
