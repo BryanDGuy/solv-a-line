@@ -1,8 +1,6 @@
-use itertools::Itertools;
 use std::cell::RefCell;
 use std::collections::{ HashMap, HashSet };
 use std::iter::{ FromIterator, Iterator };
-use std::time::Instant;
 use crate::sudoku_board::SudokuBoard;
 
 pub struct SudokuSolver {
@@ -50,34 +48,16 @@ impl SudokuSolver {
         let mut attempted_values: HashMap<(usize, usize), Vec<u8>> = HashMap::new();
         let mut unsolved_spaces_index = 0;
 
-        let mut benchmark_timing = HashMap::new();
-        let mut loop_start = Instant::now();
         while unsolved_spaces_index < self.unsolved_spaces.len() {
-            let loop_end = Instant::now();
-            let all_spaces_solved_timing = loop_end.duration_since(loop_start).as_micros();
-            *benchmark_timing.entry("loop check").or_insert(0) += all_spaces_solved_timing;
-
-            let indexes_start =  Instant::now();
             let row_index = self.unsolved_spaces[unsolved_spaces_index].0;
             let column_index = self.unsolved_spaces[unsolved_spaces_index].1;
             let nonet_index = 3 * ((9 * row_index + column_index) / 27) + ((9 * row_index + column_index) / 3 % 3);
-            solved_board.configuration[(row_index, column_index)] = 0; // Set back to 0 in the case this was a back-tracked space
-            let indexes_end = Instant::now();
-            *benchmark_timing.entry("get_indexes").or_insert(0) += indexes_end.duration_since(indexes_start).as_micros();
+            solved_board.set_value(row_index, column_index, 0); // Set back to 0 in the case this was a back-tracked space
 
-            let row_start = Instant::now();
             let row = solved_board.get_row(row_index);
-            let get_row_end = Instant::now();
             let column = solved_board.get_column(column_index);
-            let get_column_end = Instant::now();
             let nonet = solved_board.get_nonet(nonet_index);
-            let get_nonet_end = Instant::now();
 
-            *benchmark_timing.entry("get_row").or_insert(0) += get_row_end.duration_since(row_start).as_micros();
-            *benchmark_timing.entry("get_column").or_insert(0) += get_column_end.duration_since(get_row_end).as_micros();
-            *benchmark_timing.entry("get_nonet").or_insert(0) += get_nonet_end.duration_since(get_column_end).as_micros();
-
-            let invalid_start = Instant::now();
             let invalid_value_candidates: HashSet<u8> = HashSet::from_iter( // Store in a set, all the previously used values, values in row, column, and nonet.
                 attempted_values.entry((row_index, column_index)).or_default().iter()
                 .chain(row.iter().filter(|&&value| value != 0))
@@ -85,14 +65,11 @@ impl SudokuSolver {
                 .chain(nonet.iter().filter(|&&value| value != 0))
                 .map(|value| *value)
             );
-            let invalid_end = Instant::now();
-            *benchmark_timing.entry("invalid_candidates").or_insert(0) += invalid_end.duration_since(invalid_start).as_micros();
 
-            let valid_start = Instant::now();
             let mut valid_value_candidates = all_value_candidates.iter().filter(|value| !invalid_value_candidates.contains(value));
             let first_value = valid_value_candidates.next();
             if first_value.is_some() { // Found a valid value to use
-                solved_board.configuration[(row_index, column_index)] = *first_value.unwrap();
+                solved_board.set_value(row_index, column_index, *first_value.unwrap());
                 attempted_values.entry((row_index, column_index)).or_default().push(*first_value.unwrap());
                 unsolved_spaces_index += 1;
             }
@@ -100,16 +77,8 @@ impl SudokuSolver {
                 attempted_values.remove(&(row_index, column_index));
                 unsolved_spaces_index -= 1;
             }
-            let valid_end = Instant::now();
-            *benchmark_timing.entry("valid_candidates").or_insert(0) += valid_end.duration_since(valid_start).as_micros();
-
-            loop_start = Instant::now();
         };
 
-        let mut sorted_timings = benchmark_timing.iter().collect_vec();
-        sorted_timings.sort_by(|x, y| y.1.cmp(x.1));
-        println!("sorted benchmarks: {:?}", sorted_timings);
-        
         self.solved_board.replace(Some(solved_board));
         return SudokuBoard::copy(self.solved_board.borrow().as_ref().unwrap());
     }
@@ -135,7 +104,7 @@ mod tests {
         ]);
         
         let solver = SudokuSolver::new(&valid_board);
-        assert_eq!(solver.board.configuration, valid_board.configuration);
+        assert_eq!(solver.board.get_board(), valid_board.get_board());
         assert_eq!(solver.unsolved_spaces, vec![
             (0, 0),
             (6, 3),
@@ -180,7 +149,7 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
 
-        assert_eq!(solved_board.configuration, SudokuBoard::new(&[
+        assert_eq!(solved_board.get_board(), SudokuBoard::new(&[
             6,7,3, 8,9,4, 5,1,2,
             9,1,2, 7,3,5, 4,8,6,
             8,4,5, 6,1,2, 9,7,3,
@@ -190,7 +159,7 @@ mod tests {
             4,6,9, 1,2,8, 7,3,5,
             2,8,7, 3,5,6, 1,4,9,
             3,5,1, 9,4,7, 6,2,8
-        ]).configuration);
+        ]).get_board());
     }
 
     #[test]
@@ -210,7 +179,7 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
 
-        assert_eq!(solved_board.configuration, SudokuBoard::new(&[
+        assert_eq!(solved_board.get_board(), SudokuBoard::new(&[
             7,8,5, 4,3,9, 1,2,6,
             6,1,2, 8,7,5, 3,4,9,
             4,9,3, 6,2,1, 5,7,8,
@@ -220,7 +189,7 @@ mod tests {
             5,7,8, 3,9,4, 6,1,2,
             1,2,6, 5,8,7, 4,9,3,
             3,4,9, 2,1,6, 8,5,7
-        ]).configuration);
+        ]).get_board());
     }
 
     #[test]
@@ -240,7 +209,7 @@ mod tests {
         let solver = SudokuSolver::new(&valid_board);
         let solved_board = solver.solve();
 
-        assert_eq!(solved_board.configuration, SudokuBoard::new(&[
+        assert_eq!(solved_board.get_board(), SudokuBoard::new(&[
             4,3,9, 6,8,2, 7,1,5,
             6,7,2, 1,3,5, 9,4,8,
             1,5,8, 7,4,9, 3,6,2,
@@ -250,7 +219,7 @@ mod tests {
             3,6,1, 5,9,4, 2,8,7,
             2,9,7, 3,1,8, 6,5,4,
             5,8,4, 2,7,6, 1,3,9
-        ]).configuration);
+        ]).get_board());
     }
 
     #[test]
@@ -280,7 +249,7 @@ mod tests {
         let duration_second = end_second.duration_since(start_second).as_millis();
 
         println!("Caching test took {}ms to solve in the first iteration and {}ms in the second iteration.", duration_first, duration_second);
-        assert_eq!(solved_board_first.configuration, solved_board_second.configuration);
+        assert_eq!(solved_board_first.get_board(), solved_board_second.get_board());
         assert!(duration_second < duration_first);
     }
 }

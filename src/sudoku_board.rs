@@ -3,7 +3,7 @@ use nalgebra::DMatrix;
 
 #[derive(Debug)]
 pub struct SudokuBoard {
-    pub configuration: DMatrix<u8>
+    configuration: DMatrix<u8>
 }
 
 impl SudokuBoard {
@@ -96,10 +96,12 @@ impl SudokuBoard {
         return self.configuration.slice((starting_row, starting_column), (3, 3)).iter().map(|value| *value).collect_vec();
     }
 
-    pub fn print(&self) {
-        for row in 0..=8 {
-            println!("{:?}", self.get_row(row));
-        }
+    pub fn get_board(&self) -> Vec<u8> {
+        return self.configuration.iter().map(|value| *value).collect_vec();
+    }
+
+    pub fn set_value(&mut self, row: usize, column: usize, value: u8) {
+        self.configuration[(row, column)] = value;
     }
 }
 
