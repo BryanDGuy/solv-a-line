@@ -7,11 +7,7 @@ pub struct SudokuBoard {
 }
 
 impl SudokuBoard {
-    pub fn new(sudoku_puzzle: &[u8]) -> SudokuBoard {
-        if sudoku_puzzle.len() != 81 {
-            panic!("The board must be 9x9.");
-        }
-
+    pub fn new(sudoku_puzzle: &[u8; 81]) -> SudokuBoard {
         if sudoku_puzzle.iter().any(|value| *value > 9) { // Values will not be negative because `u8` is used
             panic!("All values must be [0..9] inclusive");
         }
@@ -126,39 +122,6 @@ mod test {
         let valid_board = SudokuBoard::new(&valid_configuration);
 
         assert_eq!(valid_board.configuration, DMatrix::from_row_slice(9, 9, &valid_configuration));
-    }
-
-    #[test]
-    #[should_panic]
-    fn constructor_works_invalid_board_invalid_rows() {
-        let invalid_board_rows = [
-            0,7,3, 8,9,4, 5,1,2,
-            9,1,2, 7,3,5, 4,8,6,
-            8,4,5, 6,1,2, 9,7,3,
-            7,9,8, 2,6,1, 3,5,4,
-            5,2,6, 4,7,3, 8,9,1,
-            1,3,4, 5,8,9, 2,6,7,
-            4,6,9, 0,2,8, 7,3,5,
-            2,8,7, 3,5,6, 1,4,9
-        ];
-        SudokuBoard::new(&invalid_board_rows);
-    }
-
-    #[test]
-    #[should_panic]
-    fn constructor_works_invalid_board_invalid_columns() {
-        let invalid_board_columns = [
-            0,7,3, 8,9,4, 5,1,
-            9,1,2, 7,3,5, 4,8,
-            8,4,5, 6,1,2, 9,7,
-            7,9,8, 2,6,1, 3,5,
-            5,2,6, 4,7,3, 8,9,
-            1,3,4, 5,8,9, 2,6,
-            4,6,9, 0,2,8, 7,3,
-            2,8,7, 3,5,6, 1,4,
-            3,5,1, 9,4,7, 6,2
-        ];
-        SudokuBoard::new(&invalid_board_columns);
     }
 
     #[test]
