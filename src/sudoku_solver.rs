@@ -52,7 +52,7 @@ impl SudokuSolver {
 
         let mut benchmark_timing = HashMap::new();
         let mut loop_start = Instant::now();
-        while !solved_board.all_spaces_solved() {
+        while unsolved_spaces_index < self.unsolved_spaces.len() {
             let loop_end = Instant::now();
             let all_spaces_solved_timing = loop_end.duration_since(loop_start).as_micros();
             *benchmark_timing.entry("all_spaces_solved").or_insert(0) += all_spaces_solved_timing;

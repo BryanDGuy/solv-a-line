@@ -68,10 +68,6 @@ impl SudokuBoard {
         return true;
     }
 
-    pub fn all_spaces_solved(&self) -> bool {
-        return !self.configuration.iter().any(|row| row.iter().any(|value| *value == 0));
-    }
-
     pub fn get_row(&self, row_index: usize) -> Vec<u8> {
         return self.configuration[row_index].to_vec();
     }
@@ -242,35 +238,6 @@ mod test {
 
         assert_eq!(invalid_board.all_spaces_valid(), false);
         assert_eq!(valid_board.all_spaces_valid(), true);
-    }
-
-    #[test]
-    fn all_spaces_solved_works() {
-        let board_with_zeroes = SudokuBoard::new(&vec![
-            vec![ 0,7,3, 8,9,4, 5,1,2 ],
-            vec![ 9,1,2, 7,3,5, 4,8,6 ],
-            vec![ 8,4,5, 6,1,2, 9,7,3 ],
-            vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 8,9,1 ],
-            vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 0,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ],
-            vec![ 3,5,1, 9,4,7, 6,2,0 ]
-        ]);
-        let board_without_zeroes = SudokuBoard::new(&vec![
-            vec![ 6,7,3, 8,9,4, 5,1,2 ],
-            vec![ 9,1,2, 7,3,5, 4,8,6 ],
-            vec![ 8,4,5, 6,1,2, 9,7,3 ],
-            vec![ 7,9,8, 2,6,1, 3,5,4 ],
-            vec![ 5,2,6, 4,7,3, 8,9,1 ],
-            vec![ 1,3,4, 5,8,9, 2,6,7 ],
-            vec![ 4,6,9, 1,2,8, 7,3,5 ],
-            vec![ 2,8,7, 3,5,6, 1,4,9 ],
-            vec![ 3,5,1, 9,4,7, 6,2,8 ]
-        ]);
-
-        assert_eq!(board_with_zeroes.all_spaces_solved(), false);
-        assert_eq!(board_without_zeroes.all_spaces_solved(), true);
     }
 
     #[test]
